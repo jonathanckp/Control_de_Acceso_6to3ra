@@ -1,0 +1,36 @@
+Realizar un programa, codificado en lenguaje C/C++, que realize el control de acceso de u determinado recinto. 
+Para ello se dispoe de la siguientes fuciones y estructuras en aux.h.
+
+tydef struct
+{
+  char *nombre;          //nombre del usuario
+  char *apellido;        //Apellido del usuario
+
+}st_datos_personales;
+
+typedef struct
+{
+  st_datos_personales datos_personales;
+  uint32_t numero;    //Numero de tag
+  uint8_t puerta;     //Numero de puerta que debe abrirse
+}st_usuario;
+
+typedef struct
+{
+  st_usuario usuario;
+  uint8_t accion;
+}st_pack;
+
+st_pack lectura();
+void set salida (uint8_t comando, uint8_t nsal);
+uint32_t segundos();
+
+La funcion lectura devuelde una estructura de tipo st_pack con  el campo accion cuyo valor se corresponde con la siguiente tabla:
+//////////////////////////////////////////////////////////////////
+// Valor            //          Tarea a ejecutar                //
+// 0                //       Ninguna                            //
+// 1                //      Tag leido, se debe procesar         //
+// 2                //          Alta de Usuario                 //
+// 3                //       Baja de usuario                    //
+// 4                //    Mostrar lista de usuarios             //
+//////////////////////////////////////////////////////////////////
