@@ -34,3 +34,14 @@ La funcion lectura devuelde una estructura de tipo st_pack con  el campo accion 
 // 3                //       Baja de usuario                    //
 // 4                //    Mostrar lista de usuarios             //
 //////////////////////////////////////////////////////////////////
+
+La función segundos devuelve la cantidad de segundos transcurridos desde que se inició el programa.
+La función set_salida comanda la salida nsal, si comando es 1 la salida es abierta, si es 0 se cierra.
+
+El programa se debe constituir como un ciclo infinito y debe llevar una lista de los usuarios con su respectivo numero de tag.
+La función lectura() se ejecutara constantemente y, en función del valor del campo acción, realizará la tarea requerida. Si se leyó un tag se debe buscar
+su número en la lista y, en caso de existir, se debe abrir la correspodiente salida por 10 segundos. Si hay que agregar un usuario, se verifica que
+o exista en la lista y se lo agrega, los correspodientes datos se hallan en el campo usuario, con excepcion de nombres y apellido que deben 
+ser leídos por teclado (longitud máxima de cada uno de los campos 100 bytes). Si ya existe no se realiza ninguna acció. Si hay que elimiar un usuario, se lo quita
+de la lista, si no existe en la misma no se realiza ninguna acción.
+A su vez se debe llevar en memoria un contador con la cantidad de accesos que tuvo cada uno de los nsal activados.
