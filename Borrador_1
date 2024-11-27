@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include "aux.h" // Incluye la cabecera proporcionada con las funciones y estructuras definidas.
+
+#define MAX_USUARIOS 100
+#define MAX_NOMBRE 100
+#define MAX_APELLIDO 100
+
+typedef struct {
+    st_usuario usuario;
+    int contador_accesos; // Contador de accesos para cada usuario.
+} Usuario;
+
+Usuario lista_usuarios[MAX_USUARIOS];
+int total_usuarios = 0;
+int contador_salida[256] = {0}; // Contador de accesos por salida (puerta).
+
+// Función para buscar un usuario en la lista por número de tag.
+int buscar_usuario(uint32_t tag) {
+    for (int i = 0; i < total_usuarios; i++) {
+        if (lista_usuarios[i].usuario.numero == tag) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Función para agregar un usuario.
+void alta_usuario(st_usuario nuevo_usuario) {
+    if (buscar_usuario(nuevo_usuario.numero) != -1) {
+        printf("El usuario ya existe.\n");
+        return;
+    }
+    if (total_usuarios >= MAX_USUARIOS) {
+        printf("No se puede agregar más usuarios, la lista está llena.\n");
+        return;
+    }
+
+    Usuario nuevo;
+    nuevo.usuario = nuevo_usuario;
+    nuevo.contador_accesos = 0;
+
+    // Solicitar nombre y apellido desde el teclado.
+    nuevo.usuario.datos_personales.nombre = malloc(MAX_NOMBRE);
+    nuevo.usuario.datos_personales.apellido = malloc(MAX_APELLIDO);
+
+    printf("Ingrese el nombre del usuario: ");
+    fgets(nuevo.usuario.datos_personales.nombre, MAX_NOMBRE, stdin);
+    nuevo.usuario.datos_personales.nombre[strcspn(nuevo.usuario.datos_personales.nombre, "\n")] = '\0';
+
+    printf("Ingrese el apellido del usuario: ");
+    fgets(nuevo.usuario.datos_personales.apellido, MAX_APELLIDO, stdin);
+    nuevo.usuario.datos_personales.apellido[strcspn(nuevo.usuario.datos_personales.apellido, "\n")] = '\0';
+
+    lista_usuarios[total_usuarios++] = nuevo;
+    printf("Usuario agregado exitosamente.\n");
+}
+
+// Función para eliminar un usuario.
+void baja_usuario(uint32_t tag) {
+    int index = buscar_usuario(tag);
+    if (index == -1) {
+        printf("El usuario no existe.\n");
+        return;
+    }
+
+    free(lista_usuarios[index].usuario.datos_personales.nombre);
+    free(lista_usuarios[index].usuario.datos_personales.apellido);
+
+    // Mover los usuarios posteriores en la lista.
+    for (int i = index; i < total_usuarios - 1; i++) {
+        lista_usuarios[i] = lista_usuarios[i + 1];
+    }
+    total_usuarios--;
+    printf("Usuario eliminado exitosamente.\n");
+}
+
+// Función para mostrar la lista de usuarios.
+void mostrar_lista_usuarios() {
+    printf("Lista de usuarios:\n");
+    for (int i = 0; i < total_usuarios; i++) {
+        printf("Tag: %u, Nombre: %s, Apellido: %s, Puerta: %u, Accesos: %d\n",
+               lista_usuarios[i].usuario.numero,
+               lista_usuarios[i].usuario.datos_personales.nombre,
+               lista_usuarios[i].usuario.datos_personales.apellido,
+               lista_usuarios[i].usuario.puerta,
+               lista_usuarios[i].contador_accesos);
+    }
+}
+
+// Función para procesar un tag leído.
+void procesar_tag(uint32_t tag) {
+    int index = buscar_usuario(tag);
+    if (index == -1) {
+        printf("Acceso denegado: usuario no registrado.\n");
+        return;
+    }
+
+    uint8_t puerta = lista_usuarios[index].usuario.puerta;
+    printf("Acceso permitido para el usuario %s %s.\n",
+           lista_usuarios[index].usuario.datos_personales.nombre,
+           lista_usuarios[index].usuario.datos_personales.apellido);
+
+    lista_usuarios[index].contador_accesos++;
+    contador_salida[puerta]++;
+    set_salida(1, puerta); // Abrir puerta.
+    sleep(10); // Mantener la puerta abierta durante 10 segundos.
+    set_salida(0, puerta); // Cerrar puerta.
+}
+
+// Función principal.
+int main() {
+    while (1) {
+        st_pack paquete = lectura();
+
+        switch (paquete.accion) {
+            case 0:
+                // No hacer nada.
+                break;
+
+            case 1:
+                // Procesar tag leído.
+                procesar_tag(paquete.usuario.numero);
+                break;
+
+            case 2:
+                // Alta de usuario.
+                alta_usuario(paquete.usuario);
+                break;
+
+            case 3:
+                // Baja de usuario.
+                baja_usuario(paquete.usuario.numero);
+                break;
+
+            case 4:
+                // Mostrar lista de usuarios.
+                mostrar_lista_usuarios();
+                break;
+
+            default:
+                printf("Acción no reconocida.\n");
+        }
+    }
+
+    return 0;
+}
